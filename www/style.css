@@ -1,0 +1,22 @@
+
+
+body {
+  background-color: #F5F5F5;
+/* Change to Ascent Brown font from local file */
+  font-family: 'Brown Regular', sans-serif;
+  color: gray; /* text color */
+}
+
+h2 {
+  /* Change to Ascent purple */
+  color: #A561FF;
+}
+
+/* Make text visible on inputs */
+.shiny-input-container {
+  color: #474747;
+}
+
+.main_col_class {
+  background-color: #FFFFFF;
+}
