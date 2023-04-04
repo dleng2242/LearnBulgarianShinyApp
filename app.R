@@ -26,31 +26,42 @@ df_cyrillic_questions <- data.frame(questions = questions, answers = answers)
 
 questionUI <- function(id, title) {
   tagList(
-    h3(title),
-    
-    hr(),
-    valueBoxOutput(outputId = NS(id, "box_question_num")),
-    valueBoxOutput(outputId = NS(id, "box_score")),
-    valueBoxOutput(outputId = NS(id, "box_time")),
-    hr(),
     
     fluidRow(
-      div(
-        textOutput(outputId = NS(id, "question_question")),
-        textOutput(outputId = NS(id, "question_result")),
-        br(),
-        textInput(inputId = NS(id, "question_answer"), label = "Answer: "),
-        br(),
-        column(
-          width = 6,
-          br(),
-          actionButton(inputId = NS(id, "question_submit"), label = "Submit"),
-          actionButton(inputId = NS(id, "question_next"), label = "Next"),
-          actionButton(inputId = NS(id, "question_stop"), label = "Stop"),
-          actionButton(inputId = NS(id, "question_go_reset"), label = "Reset")
-        ),
-        style = "margin:10px"
-      )
+      column(width = 2),
+      column(
+        width = 8, align="center",
+        h3(title),
+        
+        hr(),
+        valueBoxOutput(outputId = NS(id, "box_question_num")),
+        valueBoxOutput(outputId = NS(id, "box_score")),
+        valueBoxOutput(outputId = NS(id, "box_time")),
+        hr(),
+        
+        fluidRow(
+          div(
+            br(),
+            textOutput(outputId = NS(id, "question_question")),
+            br(),
+            textInput(inputId = NS(id, "question_answer"), label = "Answer: "),
+            br(),
+            column(
+              width = 12, align="center",
+              br(),
+              actionButton(inputId = NS(id, "question_submit"), label = "Submit"),
+              actionButton(inputId = NS(id, "question_next"), label = "Next"),
+              actionButton(inputId = NS(id, "question_stop_start"), label = "Start"),
+              actionButton(inputId = NS(id, "question_reset"), label = "Reset")
+            ),
+            textOutput(outputId = NS(id, "question_result")),
+            br(),
+            hr(),
+            style = "margin:10px"
+          )
+        )
+      ),
+      column(width = 2)
     )
   )
 }
@@ -60,34 +71,73 @@ questionServer <- function(id, df_questions) {
   
   moduleServer(id, function(input, output, session) {
     
-    df_questions
+    # randomly permute rows
+    df_questions = slice_sample(df_questions, prop = 1L)
     
+    # four app states - start in pre-quiz
+    state_pre_quiz <- reactiveVal(value = TRUE)
+    state_question_live <- reactiveVal(value = FALSE)
+    state_question_answered <- reactiveVal(value = FALSE)
+    state_post_quiz <- reactiveVal(value = FALSE)
+    
+    # value to record questions
     question_idx <- reactiveVal(value = 1)
-    question_answered <- reactiveVal(value = FALSE)
-    
     questions_correct <- reactiveVal(value = 0)
-    questions_answered <- reactive({question_idx() - 1})
+    questions_answered <- reactiveVal(value = 0)
     questions_total <- reactive({nrow(df_questions)})
     
+    # timer value
     game_timer_time <- reactiveVal(value = 0)
-    game_timer_active <- reactiveVal(value = TRUE)
+    
+    # game starts with buttons inactive
+    shinyjs::disable("question_submit")
+    shinyjs::disable("question_next")
+    shinyjs::disable("question_reset")
     
     
-    observeEvent(input$question_go_reset, {
+    observeEvent(input$question_stop_start, {
+      if (state_pre_quiz()) {
+        updateActionButton(
+          inputId = question_stop_start, 
+          label = "Stop"
+          )
+        state_pre_quiz(FALSE)
+        state_question_live(TRUE)
+        shinyjs::enable("question_submit")
+        # show question
+      }
+      if (state_question_live() || state_question_answered()) {
+        updateActionButton(
+          inputId = question_stop_start, 
+          label = "Start"
+        )
+        state_question_live(FALSE)
+        state_question_answered(FALSE)
+        state_post_quiz(TRUE)
+        # disable button when in post-quiz state - need to reset first
+        shinyjs::disable("question_stop_start")
+        shinyjs::disable("question_sumbit")
+        shinyjs::disable("question_next")
+        # enable reset button - only time this can be accessed
+        shinyjs::enable("question_reset")
+      }
+      if (state_post_quiz()) {
+        warning("Stop/Start button pressed while in Post-Quiz state")
+      }
+    })
+    
+    observeEvent(input$question_reset, {
+      state_post_quiz(FALSE)
+      state_pre_quiz(TRUE)
       question_idx(1)
       questions_correct(0)
+      questions_answered(0)
       game_timer_time(0)
-      game_timer_active(TRUE)
       shinyjs::enable("question_submit")
       shinyjs::enable("question_next")
     })
     
-    observeEvent(input$question_stop, {
-      game_timer_active(FALSE)
-      shinyjs::disable("question_submit")
-      shinyjs::disable("question_next")
-    })
-    
+
     observeEvent(input$question_next, {
       question_idx(isolate(question_idx() + 1)) 
       question_answered(FALSE)
@@ -95,11 +145,12 @@ questionServer <- function(id, df_questions) {
       updateTextInput(inputId = "question_answer", value = "")
     })
     
+    # timer
     observe({
       # every 1000 ms update the game_timer_time if active
       invalidateLater(1000, session)
       isolate({
-        if (game_timer_active()) {
+        if (state_question_live() || state_question_answered()) {
           game_timer_time(game_timer_time() + 1)
         }
       })
@@ -156,7 +207,19 @@ questionServer <- function(id, df_questions) {
     })
     
     output$question_question <- renderText({
-      df_questions$questions[question_idx()]
+      if (state_pre_quiz()) {
+        "Click Start to begin."
+      }
+      if (state_question_live()){
+        df_questions$questions[question_idx()]
+      }
+      if (state_question_answered()) {
+        ""
+      }
+      if (state_post_quiz()) {
+        "Quiz Finished! Click Reset to try again."
+      }
+      
     })
     
     output$question_result <- renderText({
@@ -175,19 +238,13 @@ ui <- navbarPage(
     ),
     title
   ), 
-  header = titlePanel(
-    title = div(
-      img(
-        src="Flag_of_Bulgaria.png", 
-        height = 40,
-        style = "margin:10px 10px"
-      ),
-      title
-    )
-  ),
   footer = div(
+    br(),
+    hr(),
+    br(),
     "This app was created by Duncan Leng (March 2023).",
-    style = "margin:10px 10px"
+    style = "margin:10px 10px",
+    align = "right"
   ),
   
   tags$head(
