@@ -80,11 +80,12 @@ questionServer <- function(id, df_questions) {
     state_question_answered <- reactiveVal(value = FALSE)
     state_post_quiz <- reactiveVal(value = FALSE)
     
-    # value to record questions
-    question_idx <- reactiveVal(value = 1)
+    # values to record question state
+    question_idx <- reactiveVal(value = 0)
     questions_correct <- reactiveVal(value = 0)
     questions_answered <- reactiveVal(value = 0)
     questions_total <- reactive({nrow(df_questions)})
+    question_response <- reactiveVal(value = " ")
     
     # timer value
     game_timer_time <- reactiveVal(value = 0)
@@ -93,56 +94,167 @@ questionServer <- function(id, df_questions) {
     shinyjs::disable("question_submit")
     shinyjs::disable("question_next")
     shinyjs::disable("question_reset")
+    # only start is enabled
+    shinyjs::enable("question_stop_start")
     
     
+    # Stop/Start
     observeEvent(input$question_stop_start, {
       if (state_pre_quiz()) {
         updateActionButton(
-          inputId = question_stop_start, 
+          inputId = "question_stop_start",
           label = "Stop"
           )
+        # update question index to first question
+        question_idx(isolate(question_idx() + 1))
+        # update states
         state_pre_quiz(FALSE)
         state_question_live(TRUE)
         shinyjs::enable("question_submit")
-        # show question
-      }
-      if (state_question_live() || state_question_answered()) {
+        shinyjs::disable("question_reset")
+      } else if (state_question_live() || state_question_answered()) {
         updateActionButton(
-          inputId = question_stop_start, 
+          inputId = "question_stop_start",
           label = "Start"
         )
+        # clear any text in input
+        updateTextInput(inputId = "question_answer", value = "")
+        # update states
         state_question_live(FALSE)
         state_question_answered(FALSE)
         state_post_quiz(TRUE)
         # disable button when in post-quiz state - need to reset first
         shinyjs::disable("question_stop_start")
-        shinyjs::disable("question_sumbit")
+        shinyjs::disable("question_submit")
         shinyjs::disable("question_next")
         # enable reset button - only time this can be accessed
         shinyjs::enable("question_reset")
-      }
-      if (state_post_quiz()) {
-        warning("Stop/Start button pressed while in Post-Quiz state")
+      } else if (state_post_quiz()) {
+        warning("Stop/Start button pressed while in post-quiz state")
       }
     })
     
-    observeEvent(input$question_reset, {
-      state_post_quiz(FALSE)
-      state_pre_quiz(TRUE)
-      question_idx(1)
-      questions_correct(0)
-      questions_answered(0)
-      game_timer_time(0)
-      shinyjs::enable("question_submit")
-      shinyjs::enable("question_next")
+    output$question_question <- renderText({
+      if (state_pre_quiz()) {
+        "Click Start to begin."
+      } else if (state_question_live()){
+        df_questions$questions[question_idx()]
+      } else if (state_question_answered()) {
+        df_questions$questions[question_idx()]
+      } else if (state_post_quiz()) {
+        "Quiz Finished! Click Reset to try again."
+      }
     })
     
+    
+    observeEvent(input$question_submit, {
+      if (state_pre_quiz()) {
+        warning("Submit button pressed while in pre-quiz state")
+      } else if (state_question_live()){
 
+        # Move state
+        state_question_live(FALSE)
+        state_question_answered(TRUE)
+        shinyjs::disable("question_submit")
+        shinyjs::enable("question_next")
+        
+        # Evaluate correct response
+        real_answer <-  df_questions$answers[question_idx()]
+        
+        if (is.null(input$question_answer)){return(-1)}
+        
+        question_answer <- tolower(input$question_answer)
+        if (!(question_answer == real_answer)){
+          txt <- glue("Not quite! The correct answer is {real_answer}.")
+          question_response(txt)
+        }
+        if (question_answer == real_answer){
+          txt <- glue("Great! The correct answer is {real_answer}.")
+          question_response(txt)
+        }
+
+      } else if (state_question_answered()) {
+        warning("Submit button pressed while in question answered state")
+      } else if (state_post_quiz()) {
+        warning("Submit button pressed while in post-quiz state")
+      }
+    })
+    
+    
+    # question result
+    output$question_result <- renderText({
+      if (state_pre_quiz()) {
+        " "
+      } else if (state_question_live()){
+        " "
+      } else if (state_question_answered()) {
+        question_response()
+      } else if (state_post_quiz()) {
+        glue("Great - Your scored {questions_correct()}/{questions_answered()}")
+      }
+      
+    })
+    
+    
+    # next button 
     observeEvent(input$question_next, {
-      question_idx(isolate(question_idx() + 1)) 
-      question_answered(FALSE)
-      # clear previous answer
-      updateTextInput(inputId = "question_answer", value = "")
+      if (state_pre_quiz()) {
+        warning("Next button pressed while in pre-quiz state")
+      } else if (state_question_live()){
+        warning("Next button pressed while in live question state")
+      } else if (state_question_answered()) {
+        
+        # change question index before we change state
+        question_idx(isolate(question_idx() + 1)) 
+        # clear previous answer from answer input
+        updateTextInput(inputId = "question_answer", value = "")
+        
+        if (question_idx() > questions_total()){
+          updateActionButton(
+            inputId = "question_stop_start",
+            label = "Start"
+          )
+          state_question_live(FALSE)
+          state_question_answered(FALSE)
+          state_post_quiz(TRUE)
+          # disable button when in post-quiz state - need to reset first
+          shinyjs::disable("question_stop_start")
+          shinyjs::disable("question_submit")
+          shinyjs::disable("question_next")
+          # enable reset button - only time this can be accessed
+          shinyjs::enable("question_reset")
+          
+        } else {
+          state_question_answered(FALSE)
+          state_question_live(TRUE)
+          shinyjs::disable("question_next")
+          shinyjs::enable("question_submit")
+        }
+      } else if (state_post_quiz()) {
+        warning("Next button pressed while in post-quiz state")
+      }
+    })
+    
+    # reset button
+    observeEvent(input$question_reset, {
+      
+      if (state_pre_quiz()) {
+        warning("Reset button pressed while in pre-quiz state")
+      } else if (state_question_live()){
+        warning("Reset button pressed while in live question state")
+      } else if (state_question_answered()) {
+        warning("Reset button pressed while in question answered state")
+      } else if (state_post_quiz()) {
+        # reset all values
+        question_idx(0)
+        questions_correct(0)
+        questions_answered(0)
+        game_timer_time(0)
+        state_post_quiz(FALSE)
+        state_pre_quiz(TRUE)
+        shinyjs::enable("question_stop_start")
+        shinyjs::disable("question_reset")
+      }
     })
     
     # timer
@@ -156,6 +268,8 @@ questionServer <- function(id, df_questions) {
       })
     })
     
+    
+    # value boxes
     output$box_question_num <- renderValueBox({
       valueBox(
         value = glue("{question_idx()}/{questions_total()}"),
@@ -182,49 +296,6 @@ questionServer <- function(id, df_questions) {
       )
     })
     
-    
-    question_outcome <- eventReactive(input$question_submit, {
-      real_answer <-  df_questions$answers[question_idx()]
-      
-      if (is.null(input$question_answer)){return(-1)}
-      
-      question_answer <- tolower(input$question_answer)
-      if (!(question_answer == real_answer)){
-        if (!question_answered()) {
-          question_answered(TRUE)
-        }
-        txt <- glue("Not quite! The correct answer is {real_answer}.")
-        return(txt)
-      }
-      if (question_answer == real_answer){
-        if (!question_answered()) {
-          questions_correct(isolate(questions_correct() + 1))
-          question_answered(TRUE)
-        }
-        txt <- glue("Great! The correct answer is {real_answer}.")
-        return(txt)
-      }
-    })
-    
-    output$question_question <- renderText({
-      if (state_pre_quiz()) {
-        "Click Start to begin."
-      }
-      if (state_question_live()){
-        df_questions$questions[question_idx()]
-      }
-      if (state_question_answered()) {
-        ""
-      }
-      if (state_post_quiz()) {
-        "Quiz Finished! Click Reset to try again."
-      }
-      
-    })
-    
-    output$question_result <- renderText({
-      question_outcome()
-    })
     
   })
 }
