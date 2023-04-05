@@ -8,23 +8,7 @@ library(hms)
 
 
 
-df <- read_csv("./data/bulgarian_letters_dataset.csv")
-
-# Questions made from data 
-questions <- paste0(
-  "What is the transliteration for '",
-  df$bg_upper, "/", df$bg_lower, "' ?"
-)
-# all answers lowercase
-answers <- df$transliteration_lower
-stopifnot(length(questions) == length(answers))
-
-# throw into df to be used later
-df_cyrillic_questions <- data.frame(questions = questions, answers = answers)
-
-
-
-questionUI <- function(id, title) {
+questionUI <- function(id, title, description) {
   tagList(
     
     fluidRow(
@@ -38,10 +22,10 @@ questionUI <- function(id, title) {
         valueBoxOutput(outputId = NS(id, "box_score")),
         valueBoxOutput(outputId = NS(id, "box_time")),
         hr(),
-        
         fluidRow(
           div(
             br(),
+            p(description),
             textOutput(outputId = NS(id, "question_question")),
             br(),
             textOutput(outputId = NS(id, "question_result")),
@@ -73,7 +57,12 @@ questionServer <- function(id, df_questions) {
   moduleServer(id, function(input, output, session) {
     
     # randomly permute rows
-    df_questions = slice_sample(df_questions, prop = 1L)
+    # df_questions assumes three columns:
+    #   bulgarian, english, and notes
+    df_questions <- slice_sample(df_questions, prop = 1L)
+    questions <- df_questions$bulgarian
+    answers <- df_questions$english
+    notes <- df_questions$notes
     
     # four app states - start in pre-quiz
     state_pre_quiz <- reactiveVal(value = TRUE)
@@ -139,9 +128,9 @@ questionServer <- function(id, df_questions) {
       if (state_pre_quiz()) {
         "Click Start to begin."
       } else if (state_question_live()){
-        df_questions$questions[question_idx()]
+        glue("{questions[question_idx()]}")
       } else if (state_question_answered()) {
-        df_questions$questions[question_idx()]
+        glue("{questions[question_idx()]}")
       } else if (state_post_quiz()) {
         "Quiz Finished! Click Reset to try again."
       }
@@ -160,7 +149,7 @@ questionServer <- function(id, df_questions) {
         shinyjs::enable("question_next")
         
         # Evaluate correct response
-        real_answer <-  df_questions$answers[question_idx()]
+        real_answer <-  answers[question_idx()]
         
         # update questions answered
         questions_answered(isolate(questions_answered() + 1))
@@ -168,11 +157,11 @@ questionServer <- function(id, df_questions) {
         if (is.null(input$question_answer)){return(-1)}
         
         question_answer <- tolower(input$question_answer)
-        if (!(question_answer == real_answer)){
+        if (!(tolower(question_answer) == tolower(real_answer))){
           txt <- glue("\U274c Not quite! The correct answer is {real_answer}.")
           question_response(txt)
         }
-        if (question_answer == real_answer){
+        if (tolower(question_answer) == tolower(real_answer)){
           # update questions correct
           questions_correct(isolate(questions_correct() + 1))
           txt <- glue("\U2705 Great! The correct answer is {real_answer}.")
@@ -347,18 +336,40 @@ ui <- navbarPage(
     "Quiz",
     tabPanel(
       "Cyrillic Alphabet",
-      questionUI("Question_1", title = "Cyrillic Alphabet Quiz")
+      questionUI(
+        "quiz_cyrillic", 
+        title = "Cyrillic Alphabet Quiz",
+        description = "Enter the transliteration for the Cyrillic symbol given."
+        )
+    ),
+    tabPanel(
+      "Numbers",
+      questionUI(
+        "quiz_numbers", 
+        title = "Numbers Quiz",
+        description = "Enter the number in letter form."
+        )
     ),
     tabPanel(
       "Animals",
-      questionUI("Question_2", title = "Bulgarian Animals Quiz")
+      questionUI(
+        "quiz_animals", 
+        title = "Bulgarian Animals Quiz",
+        description = "Enter the name of the animal"
+        )
     )
   )
 )
 
 server <- function(input, output, session) {
-  questionServer("Question_1", df_questions = df_cyrillic_questions)
-  questionServer("Question_2", df_questions = df_cyrillic_questions)
+  df_cyrillic <- read_csv("./data/bulgarian_cyrillic_alphabet.csv")
+  questionServer("quiz_cyrillic", df_questions = df_cyrillic)
+  
+  df_numbers <- read_csv("./data/bulgarian_numbers.csv")
+  questionServer("quiz_numbers", df_questions = df_numbers)
+  
+  df_animals <- read_csv("./data/bulgarian_animals.csv")
+  questionServer("quiz_animals", df_questions = df_animals)
 }
 
 
