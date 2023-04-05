@@ -44,6 +44,8 @@ questionUI <- function(id, title) {
             br(),
             textOutput(outputId = NS(id, "question_question")),
             br(),
+            textOutput(outputId = NS(id, "question_result")),
+            br(),
             textInput(inputId = NS(id, "question_answer"), label = "Answer: "),
             br(),
             column(
@@ -54,7 +56,6 @@ questionUI <- function(id, title) {
               actionButton(inputId = NS(id, "question_stop_start"), label = "Start"),
               actionButton(inputId = NS(id, "question_reset"), label = "Reset")
             ),
-            textOutput(outputId = NS(id, "question_result")),
             br(),
             hr(),
             style = "margin:10px"
@@ -161,15 +162,20 @@ questionServer <- function(id, df_questions) {
         # Evaluate correct response
         real_answer <-  df_questions$answers[question_idx()]
         
+        # update questions answered
+        questions_answered(isolate(questions_answered() + 1))
+        
         if (is.null(input$question_answer)){return(-1)}
         
         question_answer <- tolower(input$question_answer)
         if (!(question_answer == real_answer)){
-          txt <- glue("Not quite! The correct answer is {real_answer}.")
+          txt <- glue("\U274c Not quite! The correct answer is {real_answer}.")
           question_response(txt)
         }
         if (question_answer == real_answer){
-          txt <- glue("Great! The correct answer is {real_answer}.")
+          # update questions correct
+          questions_correct(isolate(questions_correct() + 1))
+          txt <- glue("\U2705 Great! The correct answer is {real_answer}.")
           question_response(txt)
         }
 
@@ -203,12 +209,8 @@ questionServer <- function(id, df_questions) {
       } else if (state_question_live()){
         warning("Next button pressed while in live question state")
       } else if (state_question_answered()) {
-        
-        # change question index before we change state
-        question_idx(isolate(question_idx() + 1)) 
         # clear previous answer from answer input
         updateTextInput(inputId = "question_answer", value = "")
-        
         if (question_idx() > questions_total()){
           updateActionButton(
             inputId = "question_stop_start",
@@ -225,6 +227,8 @@ questionServer <- function(id, df_questions) {
           shinyjs::enable("question_reset")
           
         } else {
+          # change question index before we change state
+          question_idx(isolate(question_idx() + 1)) 
           state_question_answered(FALSE)
           state_question_live(TRUE)
           shinyjs::disable("question_next")
