@@ -211,7 +211,7 @@ questionServer <- function(id, df_questions) {
       } else if (state_question_answered()) {
         # clear previous answer from answer input
         updateTextInput(inputId = "question_answer", value = "")
-        if (question_idx() > questions_total()){
+        if (question_idx() >= questions_total()){
           updateActionButton(
             inputId = "question_stop_start",
             label = "Start"
@@ -309,7 +309,7 @@ ui <- navbarPage(
   title = div(
     img(
       src="Flag_of_Bulgaria.png", 
-      height = 20,
+      height = 20
     ),
     title
   ), 
