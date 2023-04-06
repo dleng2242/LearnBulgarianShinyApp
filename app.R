@@ -8,6 +8,38 @@ library(hms)
 
 
 
+startUI <- function(id, title) {
+  tagList(
+    fluidRow(
+      column(width = 3),
+      column(
+        width = 6,
+        titlePanel(
+          title = div(
+            img(
+              src="Flag_of_Bulgaria.png", 
+              height = 40
+            ),
+            title
+          )
+        ),
+        br(),
+        p("Welcome to my Learn Bulgarian App."),
+        br(),
+        p("This app was developed to help me learn Bulgarian (and learn R 
+          Shiny). It is fairly simple with only two main components: tables 
+          of vocab to study and a quiz section to test your knowledge. 
+          Different topics can be found in the Vocab and Quiz menus above."),
+        br(),
+        p("Currently there are only a few topics, but I will add more in future!"),
+        br(),
+        p("Enjoy studying!")
+      ),
+      column(width = 3)
+    )
+  )
+}
+
 questionUI <- function(id, title, description) {
   tagList(
     
@@ -320,10 +352,10 @@ ui <- navbarPage(
     ),
   useShinyjs(),
   
-  tabPanel("Start"),
+  tabPanel("Start", startUI("start_page", title)),
   
   navbarMenu(
-    "Learn",
+    "Vocab",
     tabPanel(
       "Cyrillic Alphabet"
     ),
