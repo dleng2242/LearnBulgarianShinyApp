@@ -347,16 +347,40 @@ ui <- navbarPage(
       questionUI(
         "quiz_numbers", 
         title = "Numbers Quiz",
-        description = "Enter the number in letter form."
+        description = "Translate the number in letter form."
         )
+    ),
+    tabPanel(
+      "Food",
+      questionUI(
+        "quiz_food", 
+        title = "Food Quiz",
+        description = "Translate the food item."
+      )
+    ),
+    tabPanel(
+      "Drinks",
+      questionUI(
+        "quiz_drinks", 
+        title = "Drinks Quiz",
+        description = "Translate the drink."
+      )
     ),
     tabPanel(
       "Animals",
       questionUI(
         "quiz_animals", 
-        title = "Bulgarian Animals Quiz",
-        description = "Enter the name of the animal"
+        title = "Animals Quiz",
+        description = "Translate the name of the animal"
         )
+    ),
+    tabPanel(
+      "Question Words",
+      questionUI(
+        "quiz_question_words", 
+        title = "Question Words Quiz",
+        description = "Translate the question."
+      )
     )
   )
 )
@@ -368,8 +392,17 @@ server <- function(input, output, session) {
   df_numbers <- read_csv("./data/bulgarian_numbers.csv")
   questionServer("quiz_numbers", df_questions = df_numbers)
   
+  df_food <- read_csv("./data/bulgarian_food.csv")
+  questionServer("quiz_food", df_questions = df_food)
+  
+  df_drinks <- read_csv("./data/bulgarian_drinks.csv")
+  questionServer("quiz_drinks", df_questions = df_drinks)
+  
   df_animals <- read_csv("./data/bulgarian_animals.csv")
   questionServer("quiz_animals", df_questions = df_animals)
+  
+  df_question_words <- read_csv("./data/bulgarian_questions.csv")
+  questionServer("quiz_question_words", df_questions = df_question_words)
 }
 
 
