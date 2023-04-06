@@ -118,13 +118,18 @@ questionServer <- function(id, df_questions) {
   
   moduleServer(id, function(input, output, session) {
     
-    # randomly permute rows
+    # randomly permute rows - this only 
     # df_questions assumes three columns:
     #   bulgarian, english, and notes
-    df_questions <- slice_sample(df_questions, prop = 1L)
-    questions <- df_questions$bulgarian
-    answers <- df_questions$english
-    notes <- df_questions$notes
+    # all values reactive to sync when re-shuffles in reset
+    df_questions_rv <- reactiveVal({
+      #slice_sample(df_questions, prop = 1L)
+      df_questions
+    })
+    questions <- reactive({df_questions_rv()$bulgarian})
+    answers <- reactive({df_questions_rv()$english})
+    notes <- reactive({df_questions_rv()$notes})
+
     
     # four app states - start in pre-quiz
     state_pre_quiz <- reactiveVal(value = TRUE)
@@ -157,6 +162,11 @@ questionServer <- function(id, df_questions) {
           inputId = "question_stop_start",
           label = "Stop"
           )
+        
+        # randomly permute rows
+        #   re-shuffles each time the game starts 
+        df_questions_rv(slice_sample(df_questions_rv(), prop = 1L))
+        
         # update question index to first question
         question_idx(isolate(question_idx() + 1))
         # update states
@@ -190,9 +200,9 @@ questionServer <- function(id, df_questions) {
       if (state_pre_quiz()) {
         "Click Start to begin."
       } else if (state_question_live()){
-        glue("{questions[question_idx()]}")
+        glue("{questions()[question_idx()]}")
       } else if (state_question_answered()) {
-        glue("{questions[question_idx()]}")
+        glue("{questions()[question_idx()]}")
       } else if (state_post_quiz()) {
         "Quiz Finished! Click Reset to try again."
       }
@@ -211,7 +221,7 @@ questionServer <- function(id, df_questions) {
         shinyjs::enable("question_next")
         
         # Evaluate correct response
-        real_answer <-  answers[question_idx()]
+        real_answer <-  answers()[question_idx()]
         
         # update questions answered
         questions_answered(isolate(questions_answered() + 1))
