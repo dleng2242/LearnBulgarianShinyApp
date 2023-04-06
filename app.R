@@ -40,6 +40,23 @@ startUI <- function(id, title) {
   )
 }
 
+vocabUI <- function(id, title) {
+  tagList(
+    fluidRow(
+      column(width = 2),
+      column(
+        width = 8, align="center",
+        h3(title),
+        hr(),
+        tableOutput(outputId = NS(id, "vocab_table")),
+        hr(),
+        br()
+      ),
+      column(width = 2)
+    )
+  )
+}
+
 questionUI <- function(id, title, description) {
   tagList(
     
@@ -81,6 +98,19 @@ questionUI <- function(id, title, description) {
       column(width = 2)
     )
   )
+}
+
+vocabServer <- function(id, df_vocab) {
+  moduleServer(id, function(input, output, session) {
+    output$vocab_table <- renderTable({
+      df_vocab %>% rename(
+        Bulgarian = "bulgarian",
+        English = "english",
+        Notes = "notes"
+        ) %>% 
+        mutate(Notes = if_else(is.na(Notes), "", Notes))
+    })
+  })
 }
 
 questionServer <- function(id, df_questions) {
@@ -357,11 +387,29 @@ ui <- navbarPage(
   navbarMenu(
     "Vocab",
     tabPanel(
-      "Cyrillic Alphabet"
+      "Cyrillic Alphabet",
+      vocabUI("vocab_cyrillic", title = "The Cyrillic Alphabet")
     ),
     tabPanel(
-      "Animals"
-    )
+      "Numbers",
+      vocabUI("vocab_numbers", title = "Numbers")
+    ),
+    tabPanel(
+      "Food",
+      vocabUI("vocab_food", title = "Common Food")
+    ),
+    tabPanel(
+      "Drinks",
+      vocabUI("vocab_drinks", title = "Bulgarian Drinks")
+    ),
+    tabPanel(
+      "Animals",
+      vocabUI("vocab_animals", title = "Bulgarian Animals")
+    ),
+    tabPanel(
+      "Question Words",
+      vocabUI("vocab_question_words", title = "Question Words")
+    ),
   ), 
   
   navbarMenu(
@@ -420,21 +468,27 @@ ui <- navbarPage(
 server <- function(input, output, session) {
   df_cyrillic <- read_csv("./data/bulgarian_cyrillic_alphabet.csv")
   questionServer("quiz_cyrillic", df_questions = df_cyrillic)
+  vocabServer("vocab_cyrillic", df_vocab = df_cyrillic)
   
   df_numbers <- read_csv("./data/bulgarian_numbers.csv")
   questionServer("quiz_numbers", df_questions = df_numbers)
+  vocabServer("vocab_numbers", df_vocab = df_numbers)
   
   df_food <- read_csv("./data/bulgarian_food.csv")
   questionServer("quiz_food", df_questions = df_food)
+  vocabServer("vocab_food", df_vocab = df_food)
   
   df_drinks <- read_csv("./data/bulgarian_drinks.csv")
   questionServer("quiz_drinks", df_questions = df_drinks)
+  vocabServer("vocab_drinks", df_vocab = df_drinks)
   
   df_animals <- read_csv("./data/bulgarian_animals.csv")
   questionServer("quiz_animals", df_questions = df_animals)
+  vocabServer("vocab_animals", df_vocab = df_animals)
   
   df_question_words <- read_csv("./data/bulgarian_questions.csv")
   questionServer("quiz_question_words", df_questions = df_question_words)
+  vocabServer("vocab_question_words", df_vocab = df_question_words)
 }
 
 
