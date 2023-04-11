@@ -11,31 +11,46 @@ library(hms)
 startUI <- function(id, title) {
   tagList(
     fluidRow(
-      column(width = 3),
+      column(width = 2),
       column(
-        width = 6,
-        titlePanel(
-          title = div(
-            img(
-              src="Flag_of_Bulgaria.png", 
-              height = 40
-            ),
-            title
-          )
+        width = 8,
+        fluidRow(
+          #style = "padding: 0px 0px 0px 20px;",
+          column(
+            width = 3,
+            div(
+              img(
+                src="Flag_of_Bulgaria.png", 
+                height = 60
+              ),
+              style = "padding: 20px 0px 0px 20px;"
+            )
+          ),
+          column(
+            width = 6,
+            align = "center",
+            titlePanel(title = title),
+            style = "padding: 15px 0px 0px 0px;"
+          ),
+          column(width = 3)
         ),
+        
+        hr(),
         br(),
         p("Welcome to my Learn Bulgarian App."),
         br(),
-        p("This app was developed to help me learn Bulgarian (and learn R 
+        p("This app was developed to help me learn Bulgarian (and R 
           Shiny). It is fairly simple with only two main components: tables 
-          of vocab to study and a quiz section to test your knowledge. 
+          of vocab and a quiz section to test your knowledge. 
           Different topics can be found in the Vocab and Quiz menus above."),
         br(),
         p("Currently there are only a few topics, but I will add more in future!"),
         br(),
-        p("Enjoy studying!")
-      ),
-      column(width = 3)
+        p("Enjoy studying!"),
+        hr(),
+        br()
+      ) %>% tagAppendAttributes(class="main_col_class"),
+      column(width = 2)
     )
   )
 }
@@ -51,7 +66,7 @@ vocabUI <- function(id, title) {
         tableOutput(outputId = NS(id, "vocab_table")),
         hr(),
         br()
-      ),
+      ) %>% tagAppendAttributes(class="main_col_class"),
       column(width = 2)
     )
   )
@@ -87,14 +102,17 @@ questionUI <- function(id, title, description) {
               actionButton(inputId = NS(id, "question_submit"), label = "Submit"),
               actionButton(inputId = NS(id, "question_next"), label = "Next"),
               actionButton(inputId = NS(id, "question_stop_start"), label = "Start"),
-              actionButton(inputId = NS(id, "question_reset"), label = "Reset")
+              actionButton(inputId = NS(id, "question_reset"), label = "Reset"),
+              br(),
+              hr()
             ),
             br(),
             hr(),
-            style = "margin:10px"
+            br(),
+            style = "padding: 15px 0px 20px 0px;"
           )
         )
-      ),
+      ) %>% tagAppendAttributes(class="main_col_class"),
       column(width = 2)
     )
   )
@@ -378,7 +396,7 @@ ui <- navbarPage(
     br(),
     hr(),
     br(),
-    "This app was created by Duncan Leng (March 2023).",
+    "Created by Duncan Leng (March 2023).",
     style = "margin:10px 10px",
     align = "right"
   ),

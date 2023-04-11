@@ -1,15 +1,18 @@
 
 
 body {
-  background-color: #F5F5F5;
-/* Change to Ascent Brown font from local file */
+  background-color: white;
+/* Change to Brown font from local file */
   font-family: 'Brown Regular', sans-serif;
-  color: gray; /* text color */
+  color: #474747; /* text color */
 }
 
 h2 {
-  /* Change to Ascent purple */
-  color: #A561FF;
+  color: #009b74;
+}
+
+h3 {
+  color: #009b74;
 }
 
 /* Make text visible on inputs */
@@ -19,4 +22,9 @@ h2 {
 
 .main_col_class {
   background-color: #FFFFFF;
+  border-left: 1px solid #ededed;
+  border-right: 1px solid #ededed;
+   /* top right bottom left */
+  margin: 0px 0px -20px -20px; 
+  padding: 0px 100px 0px 100px;"
 }
