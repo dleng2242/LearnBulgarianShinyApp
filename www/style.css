@@ -1,8 +1,7 @@
 
-
 body {
-  background-color: white;
-/* Change to Brown font from local file */
+  background-color: #F6F7FB;
+  /* Change to Brown font from local file */
   font-family: 'Brown Regular', sans-serif;
   color: #474747; /* text color */
 }
@@ -22,9 +21,18 @@ h3 {
 
 .main_col_class {
   background-color: #FFFFFF;
-  border-left: 1px solid #ededed;
-  border-right: 1px solid #ededed;
-   /* top right bottom left */
-  margin: 0px 0px -20px -20px; 
-  padding: 0px 100px 0px 100px;"
+  margin: -15px 0px -45px 0px; 
+  padding: 20px 50px 20px 50px;
+  border: 1px solid #ededed;
+  /* Make box shadow effect */
+  -moz-box-shadow: 0 0 5px #ccc;
+  -webkit-box-shadow: 0 0 5px #ccc;
+  box-shadow: 0 0 5px #ccc;
+}
+
+
+.navbar-default {
+    background-color: #FFFFFF !important;
+    border-color: #e7e7e7;
+    padding-left: 100px;
 }

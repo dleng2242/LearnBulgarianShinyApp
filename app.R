@@ -7,13 +7,16 @@ library(tidyverse)
 library(hms)
 
 
+MIDDLE_COL_WIDTH = 6
+SIDE_COL_WIDTH = (12 - MIDDLE_COL_WIDTH) %/% 2
+
 
 startUI <- function(id, title) {
   tagList(
     fluidRow(
-      column(width = 2),
+      column(width = SIDE_COL_WIDTH),
       column(
-        width = 8,
+        width = MIDDLE_COL_WIDTH,
         fluidRow(
           #style = "padding: 0px 0px 0px 20px;",
           column(
@@ -50,7 +53,7 @@ startUI <- function(id, title) {
         hr(),
         br()
       ) %>% tagAppendAttributes(class="main_col_class"),
-      column(width = 2)
+      column(width = SIDE_COL_WIDTH)
     )
   )
 }
@@ -58,16 +61,15 @@ startUI <- function(id, title) {
 vocabUI <- function(id, title) {
   tagList(
     fluidRow(
-      column(width = 2),
+      column(width = SIDE_COL_WIDTH),
       column(
-        width = 8, align="center",
+        width = MIDDLE_COL_WIDTH, align="center",
         h3(title),
         hr(),
         tableOutput(outputId = NS(id, "vocab_table")),
-        hr(),
         br()
       ) %>% tagAppendAttributes(class="main_col_class"),
-      column(width = 2)
+      column(width = SIDE_COL_WIDTH)
     )
   )
 }
@@ -76,9 +78,9 @@ questionUI <- function(id, title, description) {
   tagList(
     
     fluidRow(
-      column(width = 2),
+      column(width = SIDE_COL_WIDTH),
       column(
-        width = 8, align="center",
+        width = MIDDLE_COL_WIDTH, align="center",
         h3(title),
         
         hr(),
@@ -113,7 +115,7 @@ questionUI <- function(id, title, description) {
           )
         )
       ) %>% tagAppendAttributes(class="main_col_class"),
-      column(width = 2)
+      column(width = SIDE_COL_WIDTH)
     )
   )
 }
@@ -388,14 +390,14 @@ ui <- navbarPage(
   title = div(
     img(
       src="Flag_of_Bulgaria.png", 
-      height = 20
+      height = 20,
+      style = "margin:0px 5px 5px 0px",
     ),
     title
   ), 
   footer = div(
     br(),
     hr(),
-    br(),
     "Created by Duncan Leng (March 2023).",
     style = "margin:10px 10px",
     align = "right"
