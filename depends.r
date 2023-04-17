@@ -1,1 +1,1 @@
-install.packages(c("glue", "shiny", "shinydashboard", "shinyjs", "tidyverse", "hms"))
+install.packages(c("glue", "shiny", "shinydashboard", "shinyjs", "tidyverse", "hms", "logr"))

@@ -5,6 +5,12 @@ library(shinydashboard)
 library(shinyjs)
 library(tidyverse)
 library(hms)
+library(logger)
+
+
+# set up logging to file
+log_appender(appender_file("logs.log"))
+log_info('Loading app')
 
 
 MIDDLE_COL_WIDTH = 6
@@ -122,6 +128,7 @@ questionUI <- function(id, title, description) {
 
 vocabServer <- function(id, df_vocab) {
   moduleServer(id, function(input, output, session) {
+    log_info(glue("Rendering vocabServer {id}"))
     output$vocab_table <- renderTable({
       df_vocab %>% rename(
         Bulgarian = "bulgarian",
@@ -137,6 +144,8 @@ questionServer <- function(id, df_questions) {
   stopifnot(!is.reactive(df_questions))
   
   moduleServer(id, function(input, output, session) {
+    
+    log_info(glue("Rendering questionServer {id}"))
     
     # randomly permute rows - this only 
     # df_questions assumes three columns:
@@ -523,3 +532,4 @@ server <- function(input, output, session) {
 
 
 shinyApp(ui = ui, server = server)
+
