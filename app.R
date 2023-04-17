@@ -17,8 +17,8 @@ startUI <- function(id, title) {
       column(width = SIDE_COL_WIDTH),
       column(
         width = MIDDLE_COL_WIDTH,
+        class="main_col_class",
         fluidRow(
-          #style = "padding: 0px 0px 0px 20px;",
           column(
             width = 3,
             div(
@@ -52,7 +52,7 @@ startUI <- function(id, title) {
         p("Enjoy studying!"),
         hr(),
         br()
-      ) %>% tagAppendAttributes(class="main_col_class"),
+      ),
       column(width = SIDE_COL_WIDTH)
     )
   )
