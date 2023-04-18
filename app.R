@@ -130,6 +130,7 @@ vocabServer <- function(id, df_vocab) {
   moduleServer(id, function(input, output, session) {
     log_info(glue("Rendering vocabServer {id}"))
     output$vocab_table <- renderTable({
+      log_info(glue("Rendering vocabServer {id} vocab_table"))
       df_vocab %>% rename(
         Bulgarian = "bulgarian",
         English = "english",
@@ -152,12 +153,20 @@ questionServer <- function(id, df_questions) {
     #   bulgarian, english, and notes
     # all values reactive to sync when re-shuffles in reset
     df_questions_rv <- reactiveVal({
-      #slice_sample(df_questions, prop = 1L)
       df_questions
     })
-    questions <- reactive({df_questions_rv()$bulgarian})
-    answers <- reactive({df_questions_rv()$english})
-    notes <- reactive({df_questions_rv()$notes})
+    questions <- reactive({
+      log_info(glue("Rendering questionServer {id} questions"))
+      df_questions_rv()$bulgarian
+    })
+    answers <- reactive({
+      log_info(glue("Rendering questionServer {id} answers"))
+      df_questions_rv()$english
+    })
+    notes <- reactive({
+      log_info(glue("Rendering questionServer {id} notes"))
+      df_questions_rv()$notes
+    })
 
     
     # four app states - start in pre-quiz
@@ -186,6 +195,7 @@ questionServer <- function(id, df_questions) {
     
     # Stop/Start
     observeEvent(input$question_stop_start, {
+      log_info(glue("Observed questionServer {id} question_stop_start"))
       if (state_pre_quiz()) {
         updateActionButton(
           inputId = "question_stop_start",
@@ -226,6 +236,7 @@ questionServer <- function(id, df_questions) {
     })
     
     output$question_question <- renderText({
+      log_info(glue("Rendering questionServer {id} question_question"))
       if (state_pre_quiz()) {
         "Click Start to begin."
       } else if (state_question_live()){
@@ -239,6 +250,7 @@ questionServer <- function(id, df_questions) {
     
     
     observeEvent(input$question_submit, {
+      log_info(glue("Observed questionServer {id} question_submit"))
       if (state_pre_quiz()) {
         warning("Submit button pressed while in pre-quiz state")
       } else if (state_question_live()){
@@ -279,6 +291,7 @@ questionServer <- function(id, df_questions) {
     
     # question result
     output$question_result <- renderText({
+      log_info(glue("Rendering questionServer {id} question_result"))
       if (state_pre_quiz()) {
         " "
       } else if (state_question_live()){
@@ -294,6 +307,7 @@ questionServer <- function(id, df_questions) {
     
     # next button 
     observeEvent(input$question_next, {
+      log_info(glue("Observed questionServer {id} question_next"))
       if (state_pre_quiz()) {
         warning("Next button pressed while in pre-quiz state")
       } else if (state_question_live()){
@@ -331,7 +345,7 @@ questionServer <- function(id, df_questions) {
     
     # reset button
     observeEvent(input$question_reset, {
-      
+      log_info(glue("Observed questionServer {id} question_reset"))
       if (state_pre_quiz()) {
         warning("Reset button pressed while in pre-quiz state")
       } else if (state_question_live()){
@@ -365,6 +379,7 @@ questionServer <- function(id, df_questions) {
     
     # value boxes
     output$box_question_num <- renderValueBox({
+      log_info(glue("Rendering questionServer {id} box_question_num"))
       valueBox(
         value = glue("{question_idx()}/{questions_total()}"),
         subtitle = "Question",
@@ -373,6 +388,7 @@ questionServer <- function(id, df_questions) {
       )
     })
     output$box_score <- renderValueBox({
+      log_info(glue("Rendering questionServer {id} box_score"))
       valueBox(
         value = glue("{questions_correct()}/{questions_answered()}"),
         subtitle = "Score",
@@ -381,6 +397,8 @@ questionServer <- function(id, df_questions) {
       )
     })
     output$box_time <- renderValueBox({
+      # do not log timer
+      # log_info(glue("Rendering questionServer {id} box_time"))
       # whenever game_timer_time() changes, this also updates
       time <- hms(game_timer_time())
       valueBox(
