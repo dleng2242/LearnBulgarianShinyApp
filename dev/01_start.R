@@ -51,7 +51,7 @@ usethis::use_git()
 
 ## Init Testing Infrastructure ----
 ## Create a template for tests
-golem::use_recommended_tests()
+# golem::use_recommended_tests()
 
 ## Favicon ----
 # If you want to change the favicon (default is golem's one)
