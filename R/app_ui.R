@@ -27,15 +27,6 @@ app_ui <- function(request) {
         align = "right"
       ),
 
-      tags$head(
-        tags$link(
-          rel = "stylesheet",
-          type = "text/css",
-          href = "style.css"
-        )
-      ),
-      shinyjs::useShinyjs(),
-
       tabPanel(
         "Start",
         mod_01_start_ui("start_page", title = "Learn Bulgarian")
@@ -146,6 +137,6 @@ golem_add_external_resources <- function() {
     ),
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
-    includeCSS("inst/app/www/style.css")
+    shinyjs::useShinyjs()
   )
 }
