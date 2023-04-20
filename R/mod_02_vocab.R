@@ -1,6 +1,6 @@
 #' 02_vocab UI Function
 #'
-#' @description A shiny Module.
+#' @description Vocab page UI Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #' @param title Section title.
@@ -26,6 +26,8 @@ mod_02_vocab_ui <- function(id, title){
 }
 
 #' 02_vocab Server Functions
+#' 
+#' @description Vocab page Server Module.
 #'
 #' @param df_vocab DataFrame of vocab to display.Expects columns called
 #'     "bulgarian", "english", and "notes".
@@ -37,12 +39,13 @@ mod_02_vocab_server <- function(id, df_vocab){
     logger::log_info(glue::glue("Rendering vocabServer {id}"))
     output$vocab_table <- renderTable({
       logger::log_info(glue::glue("Rendering vocabServer {id} vocab_table"))
-      df_vocab %>% dplyr::rename(
-        Bulgarian = "bulgarian",
-        English = "english",
-        Notes = "notes"
-      ) %>%
-      dplyr::mutate(Notes = dplyr::if_else(is.na(Notes), "", Notes))
+      df_vocab %>% 
+        dplyr::mutate(notes = dplyr::if_else(is.na(notes), "", notes)) %>% 
+        dplyr::rename(
+          Bulgarian = "bulgarian",
+          English = "english",
+          Notes = "notes"
+        )
     })
   })
 }

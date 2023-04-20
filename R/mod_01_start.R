@@ -1,6 +1,6 @@
 #' 01_start UI Function
 #'
-#' @description A shiny Module.
+#' @description Start welcome page UI Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #' @param title Section title.
@@ -57,6 +57,8 @@ mod_01_start_ui <- function(id, title){
 }
 
 #' 01_start Server Functions
+#' 
+#' @description Start welcome page Server Module.
 #'
 #' @noRd
 mod_01_start_server <- function(id){

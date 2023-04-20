@@ -1,6 +1,6 @@
 #' 03_question UI Function
 #'
-#' @description A shiny Module.
+#' @description The Quiz page UI Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #' @param title Quiz title.
@@ -55,6 +55,8 @@ mod_03_question_ui <- function(id, title, description){
 }
 
 #' 03_question Server Functions
+#' 
+#' @description The Quiz page Server Module.
 #'
 #' @param df_questions DataFrame of questions. Expects columns called
 #'     "bulgarian", "english", and "notes".
