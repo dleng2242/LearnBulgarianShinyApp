@@ -1,0 +1,29 @@
+Package: LearnBulgarianShinyApp
+Title: Learn Bulgarian Shiny App
+Version: 0.0.3
+Authors@R: 
+    person("Duncan", "Leng", , "duncan.leng@hotmail.co.uk", role = c("cre", "aut"))
+Description: An R Shiny app to help you learn the Bulgarian Language
+License: MIT + file LICENSE
+URL: https://github.com/dleng2242/LearnBulgarianShinyApp
+BugReports: https://github.com/dleng2242/LearnBulgarianShinyApp/issues
+Imports: 
+    config (>= 0.3.1),
+    dplyr,
+    glue,
+    golem (>= 0.4.0),
+    hms,
+    logger,
+    readr,
+    shiny (>= 1.7.4),
+    shinydashboard,
+    shinyjs
+VignetteBuilder: 
+    knitr
+Config/testthat/edition: 3
+Encoding: UTF-8
+Language: en-US
+LazyData: true
+RoxygenNote: 7.2.3
+Depends: 
+    R (>= 2.10)

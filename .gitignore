@@ -43,3 +43,9 @@ temp
 
 # logs
 *.log
+
+# golem stuff
+.DS_Store
+inst/doc
+/doc/
+/Meta/
