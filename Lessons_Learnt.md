@@ -87,6 +87,11 @@ way, although if my app was much bigger it would have been much harder.
 
 I was then able to generate the package bundle, and docker files easily. 
 
+One issue I did face was how to include data in the app.
+As the data is static we did not need any hosted database/cloud storage, and
+so we can just include the data as internal package data. I read Chapter 8
+of R Packages as suggested in Engineering Shiny and that helped. 
+
 
 ## Deploying on Azure
 
