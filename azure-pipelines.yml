@@ -48,7 +48,6 @@ stages:
         tags: |
           $(tag)
 
-stages:
 - stage: Build
   displayName: Build and push app image stage
   jobs:
