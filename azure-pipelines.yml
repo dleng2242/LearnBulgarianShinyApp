@@ -46,6 +46,7 @@ stages:
         dockerfile: $(dockerfilePathBase)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
+          latest
           $(tag)
 
 - stage: Build
@@ -64,4 +65,5 @@ stages:
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
+          latest
           $(tag)
