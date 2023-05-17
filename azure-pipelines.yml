@@ -24,6 +24,8 @@ variables:
   dockerfilePathBase: '$(Build.SourcesDirectory)/Dockerfile_base'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
+  azureSubscription: 'Resource Manager - Learn Bulgarian Shiny App'
+  appName: 'LearnBulgarianShinyApp'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -67,3 +69,18 @@ stages:
         tags: |
           latest
           $(tag)
+
+- stage: 'Deploy'
+  displayName: 'Deploy the container'
+  dependsOn: Build
+  jobs:
+  - job: 'Deploy'
+    displayName: 'Deploy job'
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: AzureWebAppContainer@1
+      inputs:
+       appName: $(appName)
+       azureSubscription: $(azureSubscription)
+       containers: $(containerRegistry)/$(imageRepository):latest
