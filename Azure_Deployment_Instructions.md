@@ -57,7 +57,7 @@ e.g.
 > `az appservice plan create -g learnBG -n learnbgappservice --sku B1 --is-linux`
 
 Create a Webapp Service within the resource group, this specifies the assets 
-which will form the app. 
+which will form the app. The -i argument specifies the image. Read more [here](https://learn.microsoft.com/en-us/cli/azure/webapp?view=azure-cli-latest#az-webapp-create). 
 > `az webapp create -g {resource-group-name} -p {appservice-plan-name} -n {webapp-name} -i {container-registry-name}.azurecr.io/{local-image:version}`
 
 e.g.
@@ -66,6 +66,9 @@ e.g.
 
 3. Navigate to the Webapp Service through the Azure portal, and find your app.
 Open your app via the `Browse` button. 
+
+
+### Possible Issues
 
 As Shiny apps typically consume several gigabytes of memory, this deployment 
 method is prone to cold start delays which cause the web address to timeout 
@@ -84,4 +87,7 @@ user), and then check the `DOCKER_REGISTRY_SERVER_USERNAME`,
 `DOCKER_REGISTRY_SERVER_PASSWORD` and `DOCKER_REGISTRY_SERVER_URL` in the App 
 service configuration matches that in the container registry Access keys. 
 I then enabled a system assigned identity in my app (Identity > System assigned).
-I then restarted the app and then it all worked! 
+I then restarted the app and then it all worked! More info [here](https://learn.microsoft.com/en-us/azure/container-registry/container-registry-troubleshoot-login). 
+
+Another DS had an issue where their subscription was not registered to use namespace “Microsoft.Web”. This needed an admin to manually register subscription with a resource provider. More info [here](https://learn.microsoft.com/en-us/azure/azure-resource-manager/troubleshooting/error-register-resource-provider?tabs=azure-cli). 
+

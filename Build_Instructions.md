@@ -12,7 +12,7 @@ installing the whole operating system and R itself, which drastically reduces
 build time.
 
 
-1. Open your preferred terminal and **ensure your Docker daemon is running**.
+1. Open your preferred terminal and ensure Docker is working. 
 2. Navigate to the location of your Dockerfiles - i.e. your "deploy" folder.
 3. Change/check the following in the Dockerfile:
   * Line 1: `FROM  learnbulgarianshinyapp_base:0.1` - update the version tag
@@ -35,3 +35,10 @@ Dockerfile. Here we map localhost port 80 to container port 80.
 
 5. Navigate to *127.0.0.1:80* or *localhost:80* to ensure the container is 
 functioning properly and the app appears as expected.
+
+
+### Possible Issues
+
+Golem assumes a standard rocker base image, but if you have other dependencies it might be better to manually set a different image, such as the rocker/geospatial that has geospatial system dependencies already installed.  If you do this you might also need to then tell Docker to install Shiny Server too. More info [here](https://rocker-project.org/images/). 
+
+I had to manually update my base image name, tags, and my renv.lock file so double check yours match. 
