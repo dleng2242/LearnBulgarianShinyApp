@@ -3,7 +3,14 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- main
+  branches:
+    include:
+    - main
+
+pr:
+  branches:
+    include:
+    - '*'
 
 resources:
 - repo: self
@@ -11,29 +18,32 @@ resources:
 variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'f091a952-bf89-4053-8774-4f02c84635a8'
+  imageRepositoryBase: 'learnbulgarianshinyapp_base'
   imageRepository: 'learnbulgarianshinyapp'
   containerRegistry: 'learnbgregistry.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/deploy/Dockerfile'
+  dockerfilePathBase: '$(Build.SourcesDirectory)/Dockerfile_base'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
 stages:
-- stage: Build
-  displayName: Build and push stage
+- stage: BuildBase
+  displayName: Build and push base image stage
   jobs:
   - job: Build
     displayName: Build
+    condition: eq(variables['Build.Reason'], 'Manual')
     pool:
       vmImage: $(vmImageName)
     steps:
     - task: Docker@2
-      displayName: Build and push an image to container registry
+      displayName: Build and push base image to container registry
       inputs:
         command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
+        repository: $(imageRepositoryBase)
+        dockerfile: $(dockerfilePathBase)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
