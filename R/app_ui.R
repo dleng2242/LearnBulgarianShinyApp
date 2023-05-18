@@ -58,6 +58,10 @@ app_ui <- function(request) {
           "Question Words",
           mod_02_vocab_ui("vocab_question_words", title = "Question Words")
         ),
+        tabPanel(
+          "Calendar Words",
+          mod_02_vocab_ui("vocab_calendar", title = "Calendar Words")
+        ),
       ),
 
       navbarMenu(
@@ -108,6 +112,14 @@ app_ui <- function(request) {
             "quiz_question_words",
             title = "Question Words Quiz",
             description = "Translate the question."
+          )
+        ),
+        tabPanel(
+          "Calendar Words",
+          mod_03_question_ui(
+            "quiz_calendar",
+            title = "Calendar Words Quiz",
+            description = "Translate the calendar related word."
           )
         )
       )

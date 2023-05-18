@@ -26,5 +26,8 @@ app_server <- function(input, output, session) {
 
   mod_03_question_server("quiz_question_words", df_questions = df_question_words)
   mod_02_vocab_server("vocab_question_words", df_vocab = df_question_words)
+  
+  mod_03_question_server("quiz_calendar", df_questions = df_calendar)
+  mod_02_vocab_server("vocab_calendar", df_vocab = df_calendar)
 
 }
