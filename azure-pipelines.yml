@@ -25,7 +25,7 @@ variables:
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
   azureSubscription: 'Resource Manager - Learn Bulgarian Shiny App'
-  appName: 'LearnBulgarianShinyApp'
+  appName: 'LearnBulgarianShinyApp2'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
