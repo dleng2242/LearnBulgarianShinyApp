@@ -56,7 +56,6 @@ stages:
           $(tag)
 
 - stage: Build and Test
-  name: BuildAndTest
   displayName: Build, test, and push app image stage
   jobs:
   - job: Build and test
@@ -72,30 +71,23 @@ stages:
         repository: $(imageRepository)
         tags: |
           $(tag)
-    - task: Bash@3
+    - script: |
+        echo 'Running tests in test image...'
+        docker run --name container -i -d $(imageRepository):$(tag)
+        docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R
       displayName: Run tests in image
-      inputs:
-        - script: echo 'Running tests in test image...'
-        - script: 'docker run --name container -i -d $(imageRepository):$(tag)'
-        - script: 'docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R'
-    - task: Bash@3
-      name: UpdateTestResultVariable
+    - script: |
+        echo 'tests passed, updating testsPassed'
+        echo '##vso[task.setvariable variable=testsPassed]true'
+      # if previous task succeded, tests passed so update variable
       displayName: update testsPassed variable as passed
       condition: succeeded()
-      # if previous task succeded, tests passed so update variable
-      inputs:
-        - script: |
-            echo 'tests passed, updating testsPassed'
-            echo '##vso[task.setvariable variable=testsPassed]true'
-    - task: Bash@3
-      name: SetFailedSuffixTag
-      displayName: "Set failed suffix, if the tests failed."
-      condition: and(eq(variables['testsPassed'], false), ne(variables['Build.SourceBranchName'], 'main'))
+    - script: |
+        echo 'updating $(tag) suffix $(failedSuffix)'
+        echo '##vso[task.setvariable variable=tag]$(tag)$(failedSuffix)'
       # if this is not a release and failed -> retag the image to add failedSuffix
-      inputs:
-        - script: |
-            echo 'updating $(tag) suffix $(failedSuffix)'
-            echo '##vso[task.setvariable variable=tag]$(tag)$(failedSuffix)'
+      condition: and(eq(variables['testsPassed'], false), ne(variables['Build.SourceBranchName'], 'main'))
+      displayName: "Set failed suffix, if the tests failed."
     - task: Docker@2
       displayName: Push app image
       inputs:
