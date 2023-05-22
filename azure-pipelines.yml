@@ -82,7 +82,7 @@ stages:
       name: UpdateTestResultVariable
       displayName: update testsPassed variable as passed
       condition: succeeded()
-      # if previous task succeded, tests passed
+      # if previous task succeded, tests passed so update variable
       inputs:
         - script: |
             echo 'tests passed, updating testsPassed'
