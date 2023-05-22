@@ -77,11 +77,10 @@ stages:
         repository: $(imageRepository)
         tags: |
           $(tag)
-    - script: echo $(BuildImageTask.com.azure.dev.image.build.definitionname)
-    - script: echo $(BuildImageTask.com.azure.dev.image.build.repository.name)
-    - script: echo 'Running tests in test image...'
-    - script: 'docker run --name container -i -d $(imageRepository)'
-    - script: 'docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R'
+    - script: |
+          echo 'Running tests in test image...'
+          'docker run --name container -i -d $(imageRepository):$(tag)'
+          'docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R'
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
@@ -97,6 +96,8 @@ stages:
       displayName: "Set failed suffix, if the tests failed."
     - task: Docker@2
       displayName: Push app image
+      # always push to register even if failed tests
+      condition: or(eq(variables['testsPassed'], false), eq(variables['testsPassed'], true))
       inputs:
         command: push
         repository: $(imageRepository)
@@ -108,7 +109,7 @@ stages:
 - stage: 'Deploy'
   displayName: 'Deploy the container'
   dependsOn: BuildAndTest
-  condition: and(eq(variables['testsPassed'], true), ne(variables['Build.SourceBranchName'], 'main'))
+  condition: and(eq(variables['testsPassed'], true), eq(variables['Build.SourceBranchName'], 'main'))
   jobs:
   - job: 'Deploy'
     displayName: 'Deploy job'
