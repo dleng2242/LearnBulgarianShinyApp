@@ -77,10 +77,11 @@ stages:
         repository: $(imageRepository)
         tags: |
           $(tag)
-    - script: |
-        echo 'Running tests in test image $(BuildImageTask.com.azure.dev.image.build.definitionname)'
-        docker run --name container -i -d $(imageRepository):$(tag)
-        docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R
+    - script: echo 'Running tests in test image...'
+    - script: 'docker run --name container -i -d $(imageRepository):$(tag)'
+    - script: 'docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R'
+    - script: echo $(BuildImageTask.com.azure.dev.image.build.definitionname)
+    - script: echo $(BuildImageTask.com.azure.dev.image.build.repository.name)
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
