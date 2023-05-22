@@ -79,8 +79,8 @@ stages:
           $(tag)
     - script: |
         echo 'Running tests in test image $(BuildImageTask.com.azure.dev.image.build.definitionname)'
-        docker run --name $(imageRepository) -i -d $(imageRepository):$(tag)
-        docker exec -d $(imageRepository) Rscript $(Build.SourcesDirectory)/ci_check.R
+        docker run --name container -i -d $(imageRepository):$(tag)
+        docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
