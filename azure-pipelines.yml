@@ -27,6 +27,10 @@ variables:
   azureSubscription: 'Resource Manager - Learn Bulgarian Shiny App'
   appName: 'LearnBulgarianShinyApp'
 
+  # tests variable
+  testsPassed: false
+  failedSuffix: "-failed"
+
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
@@ -51,28 +55,59 @@ stages:
           latest
           $(tag)
 
-- stage: Build
-  displayName: Build and push app image stage
+- stage: Build and Test
+  name: BuildAndTest
+  displayName: Build, test, and push app image stage
   jobs:
-  - job: Build
-    displayName: Build
+  - job: Build and test
+    displayName: Build image and run tests
     pool:
       vmImage: $(vmImageName)
     steps:
     - task: Docker@2
-      displayName: Build and push app image to container registry
+      displayName: Build app image
       inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
+        command: build
         dockerfile: $(dockerfilePath)
+        repository: $(imageRepository)
+        tags: |
+          $(tag)
+    - task: Bash@3
+      displayName: Run tests in image
+      inputs:
+        - script: echo 'Running tests in test image...'
+        - script: 'docker run --name container -i -d $(imageRepository):$(tag)'
+        - script: 'docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R'
+    - task: Bash@3
+      name: UpdateTestResultVariable
+      displayName: update testsPassed variable as passed
+      condition: succeeded()
+      # if previous task succeded, tests passed
+      inputs:
+        targetType: 'inline'
+        - script: echo '##vso[task.setvariable variable=testsPassed;]true'
+    - task: Bash@3
+      name: SetFailedSuffixTag
+      displayName: "Set failed suffix, if the tests failed."
+      condition: and(eq(variables['testsPassed'], false), ne(variables['Build.SourceBranchName'], 'main'))
+      # if this is not a release and failed -> retag the image to add failedSuffix
+      inputs:
+        targetType: inline
+        - script: echo '##vso[task.setvariable variable=tag;]$(tag)$(failedSuffix)'
+    - task: Docker@2
+      displayName: Push app image
+      inputs:
+        command: push
+        repository: $(imageRepository)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          latest
           $(tag)
+
 
 - stage: 'Deploy'
   displayName: 'Deploy the container'
-  dependsOn: Build
+  dependsOn: BuildAndTest
+  condition: and(eq(variables['testsPassed'], true), ne(variables['Build.SourceBranchName'], 'main'))
   jobs:
   - job: 'Deploy'
     displayName: 'Deploy job'
@@ -83,4 +118,4 @@ stages:
       inputs:
        appName: $(appName)
        azureSubscription: $(azureSubscription)
-       containers: $(containerRegistry)/$(imageRepository):latest
+       containers: $(containerRegistry)/$(imageRepository):$(tag)
