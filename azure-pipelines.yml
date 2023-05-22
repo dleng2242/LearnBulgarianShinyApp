@@ -55,7 +55,7 @@ stages:
           latest
           $(tag)
 
-- stage: Build and Test
+- stage: BuildAndTest
   displayName: Build, test, and push app image stage
   jobs:
   - job: Build and test
