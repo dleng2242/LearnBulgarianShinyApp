@@ -69,6 +69,7 @@ stages:
         command: login
         containerRegistry: $(dockerRegistryServiceConnection)
     - task: Docker@2
+      name: BuildImageTask
       displayName: Build app image
       inputs:
         command: build
@@ -77,9 +78,9 @@ stages:
         tags: |
           $(tag)
     - script: |
-        echo 'Running tests in test image...'
-        docker run --name container -i -d $(imageRepository):$(tag)
-        docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R
+        echo 'Running tests in test image $(BuildImageTask.com.azure.dev.image.build.definitionname)'
+        docker run --name $(imageRepository) -i -d $(imageRepository):$(tag)
+        docker exec -d $(imageRepository) Rscript $(Build.SourcesDirectory)/ci_check.R
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
