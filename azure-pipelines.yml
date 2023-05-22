@@ -58,7 +58,7 @@ stages:
 - stage: BuildAndTest
   displayName: Build, test, and push app image stage
   jobs:
-  - job: Build and test
+  - job: BuildAndTestJob
     displayName: Build image and run tests
     pool:
       vmImage: $(vmImageName)
