@@ -85,7 +85,9 @@ stages:
       # if previous task succeded, tests passed
       inputs:
         targetType: 'inline'
-        - script: echo '##vso[task.setvariable variable=testsPassed;]true'
+        - script: |
+            echo 'tests passed, updating testsPassed'
+            echo '##vso[task.setvariable variable=testsPassed]true'
     - task: Bash@3
       name: SetFailedSuffixTag
       displayName: "Set failed suffix, if the tests failed."
@@ -93,7 +95,9 @@ stages:
       # if this is not a release and failed -> retag the image to add failedSuffix
       inputs:
         targetType: inline
-        - script: echo '##vso[task.setvariable variable=tag;]$(tag)$(failedSuffix)'
+        - script: |
+            echo 'updating $(tag) suffix $(failedSuffix)'
+            echo '##vso[task.setvariable variable=tag]$(tag)$(failedSuffix)'
     - task: Docker@2
       displayName: Push app image
       inputs:
