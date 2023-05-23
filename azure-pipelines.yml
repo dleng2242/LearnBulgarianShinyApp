@@ -86,7 +86,7 @@ stages:
       # if previous task succeded, tests passed so update variable
       displayName: update testsPassed variable as passed
       condition: succeeded()
-    - script: 'docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)$(failedSuffix)'
+    - script: 'docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):$(tag)$(failedSuffix)'
       # retag the image to add failedSuffix
       condition: eq(variables['testsPassed'], false)
       displayName: "Re-tag image with failed suffix."
