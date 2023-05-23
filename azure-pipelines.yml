@@ -119,7 +119,7 @@ stages:
 - stage: 'Deploy'
   displayName: 'Deploy the container'
   dependsOn: BuildAndTest
-  condition: and(and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main')), stageDependencies.BuildAndTest.BuildAndTestJob.outputs['UpdatePassedFlag.testsPassed'], true))
+  condition: and(and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main')), stageDependencies.BuildAndTest.BuildAndTestJob.outputs['UpdatePassedFlag.testsPassed'], true)
   jobs:
   - job: 'Deploy'
     displayName: 'Deploy job'
