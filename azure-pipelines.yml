@@ -89,6 +89,10 @@ stages:
       # retag the image to add failedSuffix
       condition: eq(variables['testsPassed'], false)
       displayName: "Re-tag image with failed suffix."
+    - script: 'docker tag $(imageRepository):$(tag) $(imageRepository):latest'
+      # retag the image to add latest tag
+      condition: eq(variables['testsPassed'], true)
+      displayName: "Re-tag image with latest tag."
     - task: Docker@2
       displayName: Push app image if fail
       # always push to register even if failed tests
