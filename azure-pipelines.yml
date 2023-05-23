@@ -27,6 +27,10 @@ variables:
   azureSubscription: 'Resource Manager - Learn Bulgarian Shiny App'
   appName: 'LearnBulgarianShinyApp'
 
+  # tests variable
+  testsPassed: false
+  failedSuffix: "-failed"
+
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
@@ -51,20 +55,61 @@ stages:
           latest
           $(tag)
 
-- stage: Build
-  displayName: Build and push app image stage
+- stage: BuildAndTest
+  displayName: Build, test, and push app image stage
   jobs:
-  - job: Build
-    displayName: Build
+  - job: BuildAndTestJob
+    displayName: Build image and run tests
     pool:
       vmImage: $(vmImageName)
     steps:
     - task: Docker@2
-      displayName: Build and push app image to container registry
+      displayName: Login to ACR
       inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
+        command: login
+        containerRegistry: $(dockerRegistryServiceConnection)
+    - task: Docker@2
+      name: BuildImageTask
+      displayName: Build app image
+      inputs:
+        command: build
         dockerfile: $(dockerfilePath)
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        arguments: '-t $(imageRepository):$(tag)'
+    - script: echo 'Running tests in test image...'
+    - script: 'docker run --name container $(imageRepository):$(tag) Rscript $(appName)/ci_check.R'
+      displayName: Run tests in image
+    - script: |
+        echo 'tests passed, updating testsPassed'
+        echo '##vso[task.setvariable variable=testsPassed]true'
+      # if previous task succeded, tests passed so update variable
+      displayName: update testsPassed variable as passed
+      condition: succeeded()
+    - script: 'docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):$(tag)$(failedSuffix)'
+      # retag the image to add failedSuffix
+      condition: eq(variables['testsPassed'], false)
+      displayName: "Re-tag image with failed suffix."
+    - script: 'docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):latest'
+      # retag the image to add latest tag
+      condition: eq(variables['testsPassed'], true)
+      displayName: "Re-tag image with latest tag."
+    - task: Docker@2
+      displayName: Push app image if fail
+      # always push to register even if failed tests
+      condition: eq(variables['testsPassed'], false)
+      inputs:
+        command: push
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)$(failedSuffix)
+    - task: Docker@2
+      displayName: Push app image if passes
+      condition: eq(variables['testsPassed'], true)
+      inputs:
+        command: push
+        repository: $(imageRepository)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           latest
@@ -72,7 +117,8 @@ stages:
 
 - stage: 'Deploy'
   displayName: 'Deploy the container'
-  dependsOn: Build
+  dependsOn: BuildAndTest
+  condition: and(eq(variables['testsPassed'], true), eq(variables['Build.SourceBranchName'], 'main'))
   jobs:
   - job: 'Deploy'
     displayName: 'Deploy job'
@@ -83,4 +129,4 @@ stages:
       inputs:
        appName: $(appName)
        azureSubscription: $(azureSubscription)
-       containers: $(containerRegistry)/$(imageRepository):latest
+       containers: $(containerRegistry)/$(imageRepository):$(tag)
