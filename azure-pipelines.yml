@@ -101,8 +101,7 @@ stages:
         command: push
         repository: $(imageRepository)
         containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)$(failedSuffix)
+        arguments: '-t $(imageRepository):$(tag)$(failedSuffix)'
     - task: Docker@2
       displayName: Push app image passes
       condition: eq(variables['testsPassed'], true)
@@ -110,9 +109,7 @@ stages:
         command: push
         repository: $(imageRepository)
         containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          latest
-          $(tag)
+        arguments: '-t $(imageRepository):latest'
 
 - stage: 'Deploy'
   displayName: 'Deploy the container'
