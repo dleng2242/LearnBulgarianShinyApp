@@ -105,14 +105,13 @@ stages:
         tags: |
           $(tag)$(failedSuffix)
     - task: Docker@2
-      displayName: Push app image passes
+      displayName: Push app image if passes
       condition: eq(variables['testsPassed'], true)
       inputs:
         command: push
         repository: $(imageRepository)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          latest
           $(tag)
 
 - stage: 'Deploy'
