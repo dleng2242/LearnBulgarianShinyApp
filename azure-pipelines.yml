@@ -90,7 +90,7 @@ stages:
       # retag the image to add failedSuffix
       condition: eq(variables['testsPassed'], false)
       displayName: "Re-tag image with failed suffix."
-    - script: 'docker tag $(imageRepository):$(tag) $(imageRepository):latest'
+    - script: 'docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):latest'
       # retag the image to add latest tag
       condition: eq(variables['testsPassed'], true)
       displayName: "Re-tag image with latest tag."
@@ -112,6 +112,7 @@ stages:
         repository: $(imageRepository)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
+          latest
           $(tag)
 
 - stage: 'Deploy'
