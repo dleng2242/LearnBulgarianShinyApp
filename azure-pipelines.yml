@@ -77,8 +77,7 @@ stages:
         repository: "learnbulgarianshinyapp"
         arguments: '-t learnbulgarianshinyapp:$(tag)'
     - script: echo 'Running tests in test image...'
-    - script: 'docker run --name container -i -d learnbulgarianshinyapp:$(tag)'
-    - script: 'docker exec container Rscript $(LearnBulgarianShinyApp)/ci_check.R'
+    - script: 'docker run --name container learnbulgarianshinyapp:$(tag) Rscript $(appName)/ci_check.R'
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
