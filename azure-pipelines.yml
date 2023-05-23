@@ -74,10 +74,10 @@ stages:
       inputs:
         command: build
         dockerfile: $(dockerfilePath)
-        repository: "learnbulgarianshinyapp"
-        arguments: '-t learnbulgarianshinyapp:$(tag)'
+        repository: $(imageRepository)
+        arguments: '-t $(imageRepository):$(tag)'
     - script: echo 'Running tests in test image...'
-    - script: 'docker run --name container learnbulgarianshinyapp:$(tag) Rscript $(appName)/ci_check.R'
+    - script: 'docker run --name container $(imageRepository):$(tag) Rscript $(appName)/ci_check.R'
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
