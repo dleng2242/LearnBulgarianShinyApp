@@ -120,8 +120,8 @@ stages:
   displayName: 'Deploy the container'
   dependsOn: BuildAndTest
   variables:
-    testsPassed: $[ stageDependencies.BuildAndTest.BuildAndTestJob.outputs['UpdatePassedFlag.testsPassed'] ]
-  condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+    testsPassed: $[ dependencies.BuildAndTest.outputs['BuildAndTestJob.UpdatePassedFlag.testsPassed'] ]
+  condition: and(and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main')), eq(variables['testsPassed'], true))
   jobs:
   - job: 'Deploy'
     displayName: 'Deploy job'
