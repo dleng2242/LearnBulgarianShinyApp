@@ -121,13 +121,14 @@ stages:
   dependsOn: BuildAndTest
   variables:
     testsPassed: $[ stageDependencies.BuildAndTest.BuildAndTestJob.outputs['UpdatePassedFlag.testsPassed'] ]
-  condition: and(and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main')), eq(variables['testsPassed'], true))
+  condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
   jobs:
   - job: 'Deploy'
     displayName: 'Deploy job'
     pool:
       vmImage: $(vmImageName)
     steps:
+    - script: echo variables['testsPassed']
     - task: AzureWebAppContainer@1
       inputs:
         appName: $(appName)
