@@ -128,7 +128,6 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-    - script: echo variables['testsPassed']
     - task: AzureWebAppContainer@1
       inputs:
         appName: $(appName)
