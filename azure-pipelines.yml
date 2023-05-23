@@ -118,7 +118,7 @@ stages:
 - stage: 'Deploy'
   displayName: 'Deploy the container'
   dependsOn: BuildAndTest
-  condition: eq(variables['testsPassed'], true)
+  condition: and(and(eq(variables['testsPassed'], true), eq(variables['Build.SourceBranchName'], 'main')), succeeded('BuildAndTest'))
   jobs:
   - job: 'Deploy'
     displayName: 'Deploy job'
