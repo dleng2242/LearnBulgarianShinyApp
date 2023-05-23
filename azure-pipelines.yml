@@ -91,16 +91,16 @@ stages:
       condition: succeeded()
     - script: 'docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):$(tag)$(failedSuffix)'
       # retag the image to add failedSuffix
-      condition: eq($(UpdatePassedFlagTask.testsPassed), false)
+      condition: eq(variables['UpdatePassedFlagTask.testsPassed'], false)
       displayName: "Re-tag image with failed suffix."
     - script: 'docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):latest'
       # retag the image to add latest tag
-      condition: eq($(UpdatePassedFlagTask.testsPassed), true)
+      condition: eq(variables['UpdatePassedFlagTask.testsPassed'], true)
       displayName: "Re-tag image with latest tag."
     - task: Docker@2
       displayName: Push app image if fail
       # always push to register even if failed tests
-      condition: eq($(UpdatePassedFlagTask.testsPassed), false)
+      condition: eq(variables['UpdatePassedFlagTask.testsPassed'], false)
       inputs:
         command: push
         repository: $(imageRepository)
@@ -109,7 +109,7 @@ stages:
           $(tag)$(failedSuffix)
     - task: Docker@2
       displayName: Push app image if passes
-      condition: eq($(UpdatePassedFlagTask.testsPassed), true)
+      condition: eq(variables['UpdatePassedFlagTask.testsPassed'], true)
       inputs:
         command: push
         repository: $(imageRepository)
