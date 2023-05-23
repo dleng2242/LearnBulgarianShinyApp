@@ -82,7 +82,8 @@ stages:
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
-        echo '##vso[task.setvariable variable=testsPassed;isOutput=true]true'
+        echo '##vso[task.setvariable variable=testsPassed]true'
+        echo '$(testsPassed)'
       # if previous task succeded, tests passed so update variable
       displayName: update testsPassed variable as passed
       name: UpdatePassedFlag
