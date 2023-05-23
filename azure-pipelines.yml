@@ -75,12 +75,11 @@ stages:
         command: build
         dockerfile: $(dockerfilePath)
         repository: $(imageRepository)
-        tags: |
-          $(tag)
+        tags: $(tag)
     - script: |
           echo 'Running tests in test image...'
-          'docker run --name container -i -d $(imageRepository):$(tag)'
-          'docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R'
+          docker run --name container -i -d $(imageRepository):$(tag)
+          docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
