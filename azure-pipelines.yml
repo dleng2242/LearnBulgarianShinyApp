@@ -82,24 +82,25 @@ stages:
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
-        echo '##vso[task.setvariable variable=testsPassed]true'
+        echo '##vso[task.setvariable variable=testsPassed;isOutput=true]true'
         echo '$(testsPassed)'
+        echo '$(UpdatePassedFlagTask.testsPassed)'
       # if previous task succeded, tests passed so update variable
       displayName: update testsPassed variable as passed
-      name: UpdatePassedFlag
+      name: UpdatePassedFlagTask
       condition: succeeded()
     - script: 'docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):$(tag)$(failedSuffix)'
       # retag the image to add failedSuffix
-      condition: eq(variables['testsPassed'], false)
+      condition: eq($(UpdatePassedFlagTask.testsPassed), false)
       displayName: "Re-tag image with failed suffix."
     - script: 'docker tag $(containerRegistry)/$(imageRepository):$(tag) $(containerRegistry)/$(imageRepository):latest'
       # retag the image to add latest tag
-      condition: eq(variables['testsPassed'], true)
+      condition: eq($(UpdatePassedFlagTask.testsPassed), true)
       displayName: "Re-tag image with latest tag."
     - task: Docker@2
       displayName: Push app image if fail
       # always push to register even if failed tests
-      condition: eq(variables['testsPassed'], false)
+      condition: eq($(UpdatePassedFlagTask.testsPassed), false)
       inputs:
         command: push
         repository: $(imageRepository)
@@ -108,7 +109,7 @@ stages:
           $(tag)$(failedSuffix)
     - task: Docker@2
       displayName: Push app image if passes
-      condition: eq(variables['testsPassed'], true)
+      condition: eq($(UpdatePassedFlagTask.testsPassed), true)
       inputs:
         command: push
         repository: $(imageRepository)
@@ -121,7 +122,7 @@ stages:
   displayName: 'Deploy the container'
   dependsOn: BuildAndTest
   variables:
-    testsPassed: $[ dependencies.BuildAndTest.outputs['BuildAndTestJob.UpdatePassedFlag.testsPassed'] ]
+    testsPassed: $[ dependencies.BuildAndTest.outputs['BuildAndTestJob.UpdatePassedFlagTask.testsPassed'] ]
   condition: and(and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main')), eq(variables['testsPassed'], true))
   jobs:
   - job: 'Deploy'
