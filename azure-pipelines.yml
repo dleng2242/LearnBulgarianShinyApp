@@ -85,23 +85,30 @@ stages:
       # if previous task succeded, tests passed so update variable
       displayName: update testsPassed variable as passed
       condition: succeeded()
-    - script: |
-        echo 'updating $(tag) suffix $(failedSuffix)'
-        echo '##vso[task.setvariable variable=tag]$(tag)$(failedSuffix)'
-      # if this is not a release and failed -> retag the image to add failedSuffix
-      condition: and(eq(variables['testsPassed'], false), ne(variables['Build.SourceBranchName'], 'main'))
-      displayName: "Set failed suffix, if the tests failed."
+    - script: 'docker tag $(imageRepository):$(tag) $(imageRepository):$(tag)$(failedSuffix)'
+      # retag the image to add failedSuffix
+      condition: eq(variables['testsPassed'], false)
+      displayName: "Re-tag image with failed suffix."
     - task: Docker@2
-      displayName: Push app image
+      displayName: Push app image if fail
       # always push to register even if failed tests
-      condition: or(eq(variables['testsPassed'], false), eq(variables['testsPassed'], true))
+      condition: eq(variables['testsPassed'], false)
       inputs:
         command: push
         repository: $(imageRepository)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
+          $(tag)$(failedSuffix)
+    - task: Docker@2
+      displayName: Push app image passes
+      condition: eq(variables['testsPassed'], true)
+      inputs:
+        command: push
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          latest
           $(tag)
-
 
 - stage: 'Deploy'
   displayName: 'Deploy the container'
