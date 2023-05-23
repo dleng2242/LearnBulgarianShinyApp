@@ -75,7 +75,7 @@ stages:
         command: build
         dockerfile: $(dockerfilePath)
         repository: "learnbulgarianshinyapp"
-        tags: $(tag)
+        arguments: '-t learnbulgarianshinyapp:$(tag)'
     - script: echo 'Running tests in test image...'
     - script: 'docker run --name container -i -d learnbulgarianshinyapp:$(tag)'
     - script: 'docker exec container Rscript $(Build.SourcesDirectory)/ci_check.R'
