@@ -42,8 +42,8 @@ mod_01_start_ui <- function(id, title){
         br(),
         p("This app was developed to help me learn Bulgarian (and R
           Shiny). It is fairly simple with only two main components: tables
-          of vocab and a quiz section to test your knowledge.
-          Different topics can be found in the Vocab and Quiz menus above."),
+          of vocab, and a quiz section to test your knowledge.
+          Different topics can be found in the 'Vocab' and 'Quiz' menus above."),
         br(),
         p("Currently there are only a few topics, but I will add more in future!"),
         br(),
