@@ -26,6 +26,7 @@ variables:
   tag: '$(Build.BuildId)'
   azureSubscription: 'Resource Manager - Learn Bulgarian Shiny App'
   appName: 'LearnBulgarianShinyApp'
+  dirName: 'LearnBulgarianShinyApp'
 
   # tests variable
   testsPassed: false
@@ -78,7 +79,7 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         arguments: '-t $(imageRepository):$(tag)'
     - script: echo 'Running tests in test image...'
-    - script: 'docker run --name container $(imageRepository):$(tag) Rscript $(Build.SourcesDirectory)/ci_check.R'
+    - script: 'docker run --name container $(imageRepository):$(tag) Rscript $(dirName)/ci_check.R'
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
