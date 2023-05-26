@@ -78,7 +78,7 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         arguments: '-t $(imageRepository):$(tag)'
     - script: echo 'Running tests in test image...'
-    - script: 'docker run --name container $(imageRepository):$(tag) Rscript $(appName)/ci_check.R'
+    - script: 'docker run --name container $(imageRepository):$(tag) Rscript $(Build.SourcesDirectory)/ci_check.R'
       displayName: Run tests in image
     - script: |
         echo 'tests passed, updating testsPassed'
