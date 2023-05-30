@@ -23,7 +23,7 @@ The first step is to create the required Azure resources once to start with,
 and then set up the pipeline to automatically update the app using the 
 `azure-pipeline.yml` file. 
 
-Permissions will likely be an issue at somepoint. To create the service 
+Permissions will likely be an issue at some point. To create the service 
 connections needed for the pipeline you need to have Owner 
 permissions over your subscription, or someone else can create one for you
 and provide you the details. 
@@ -58,7 +58,7 @@ the most expensive resource.
 
 `az acr create -n {container-registry-name} -g {resource-group-name} --sku {desired-price-plan}`
 
-Autheniticate to the registry you created. 
+Authenticate to the registry you created. 
 
 `az acr login -n {container-registry-name}`
 
@@ -110,8 +110,8 @@ The pipeline is defined in the `azure-pipelines.yml` file. Azure DevOps uses
 this file to create and run pre-defined jobs based on the configuration 
 specified. 
 
-You will need to create two service connections to allow the pipleine to
-autheniticate against your Azure Container Register and your Web App serive. 
+You will need to create two service connections to allow the pipeline to
+authenticate against your Azure Container Register and your Web App service. 
 Then you need to take our existing yaml file and edit the variables at the 
 top to match your app and service connection details. 
 Azure DevOps should then have what it needs to build your pipeline. 
@@ -148,7 +148,7 @@ do this twice, once to create the
     * Add a description if desired
     * Select "Grant access permission to all pipelines"
     * Click save
-* Add a New sevice connection and search and select "Docker Registry"
+* Add a New service connection and search and select "Docker Registry"
     * Select "Azure Container Registry"
     * Select "Service Principal" authentication type
     * Select your subscription and container registry
@@ -196,30 +196,65 @@ with your app details and Azure DevOps will build the pipeline, however
 it is helpful to have a better understanding of it as it can be quite
 overwhelming at first.
 
-The first section in our yaml file defines when to run the steps. 
+The first section in our yaml file defines when to run the stages. 
 Here it is set to trigger on changes to the main branch. 
 You can also set it to run on a schedule or on pull requests (although you
-need to edit the branch policies to get this to work).  
+need to edit the branch policies to get this to work).
 
-We then define various variables that we then reference later in the script
+We then define variables that we then reference later in the script
 for convenience. A better and more secure way to manage this would be to set
 these as variables in a variable group within the Azure DevOps pipeline 
 library.
 
-Each stage has a stage name, a display name, and then a set of defined jobs. 
-The jobs then have their own name and display name, and optional condition. 
-You then define the virtual machine image to run the job on and then define 
-the different steps. Each step takes a task which you select from the available
-Azure DevOps tasks, a task display name, and then a command along with inputs.
+The pipeline is broken down into stages which then is composed of jobs
+which itself is composed of various steps.
+Each stage has a stage name, a display name, an optional condition, 
+and then a set of defined jobs. 
+The jobs then have their own name and display name, optional condition,
+the virtual machine image to run the job on, and then the different 
+steps. Each step has a task which you select from the 
+available Azure DevOps task, a display name, and then a command along 
+with inputs.
 
-For our first stage, we use a "Docker@2" task with the command "buildAndPush",
+In our first stage, we use a `Docker@2` task with the command "buildAndPush",
 and inputs to define the docker file, image repository, container 
 registry, and image tags. You are unlikely to write one of these yourself 
 from scratch but you might need to edit different stages to match your project.
 
-The "script" task is a convenient wrapper that allows you to run short scripts
+The `script` task is a convenient wrapper that allows you to run short scripts
 as part of your pipeline. For example, it is used here to run our unit tests, 
 update variables, and re-tag our docker images.
+
+
+### Getting and Setting pipeline Variables
+
+Pipelines can use conditions to control if steps or stages are run. 
+Here I toggle a `testsPassed` variable to change to flow of the 
+pipeline to do different things depending on if the tests passed or not. 
+
+This issues is you cannot just set a variable in one step and reference in the 
+next step, or stage. You have to explicitly specify
+a variable is an output to be used elsewhere, and then reference the variable
+using the step name. 
+
+So in my pipeline, I use the following to set a variable in a script step.
+Note I use the `isOutput=true` flag. I then give this step a name
+"UpdatePassedFlagTask" so I can reference it later.
+
+`echo '##vso[task.setvariable variable=testsPassed;isOutput=true]true'`
+
+In a later step in the same job and stage I reference is as
+`variables['UpdatePassedFlagTask.testsPassed']` in a condition, using
+the step name prefix. 
+
+In the next stage I reference this variable again, but use the following.
+There are a few things to note here. First I need the specify both
+the stage `BuildAndTest` and the job `BuildAndTestJob` as well as the 
+step name `UpdatePassedFlagTask` and then the variable name 
+`testsPassed`. I am also referencing `dependecies` as the build and
+test stage is a dependency of this one. 
+
+`dependencies.BuildAndTest.outputs['BuildAndTestJob.UpdatePassedFlagTask.testsPassed']`.
 
 
 ## From Golem to Deploy 
@@ -229,7 +264,7 @@ build the package tarball in the deploy folder. Here we went with a slightly
 different approach. We will no longer build the tarball and instead copy the 
 app code directly. We have therefore edited our docker files accordingly.
 We also moved our docker files to the project root and are using the 
-renv.lock file we used during development, still at our project root.
+`renv.lock` file we used during development, still at our project root.
 
 The two image approach has many advantages, but it does take a little more set
 up compared to just one image. We first build and push the base image to the
