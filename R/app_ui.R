@@ -17,7 +17,7 @@ app_ui <- function(request) {
           height = 20,
           style = "margin:0px 5px 5px 0px",
         ),
-        "Learn Bulgarian"
+        "Learn Bulgarian Shiny App"
       ),
       footer = div(
         br(),
